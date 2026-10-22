@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="LoanWatch — Modern, responsive Indian fintech EMI Calculator and Loan Tracker with Apna Rupaiyya financial mascot.">
+  <meta name="theme-color" content="#0C1A30">
+  <title>LoanWatch — EMI Calculator &amp; Loan Tracker</title>
+  <link rel="icon" type="image/svg+xml" href="assets/icons/rupee-mascot.svg">
+
+  <!-- Design Tokens, Layout & Components -->
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+  <!-- Accessible Skip Link -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="header-accent-border" aria-hidden="true"></div>
+    <div class="header-container">
+      <a href="#" class="brand-wrapper" aria-label="LoanWatch Home">
+        <div class="brand-icon" aria-hidden="true">₹</div>
+        <div class="brand-title-wrap">
+          <span class="brand-title">
+            LoanWatch
+          </span>
+          <span class="brand-tagline">Smart Indian EMI &amp; Loan Tracker</span>
+        </div>
+      </a>
+
+      <!-- Header Mascot Tip Capsule -->
+      <div class="header-mascot-capsule" role="complementary" aria-label="Mascot Tip">
+        <img src="assets/icons/rupee-mascot.svg" alt="Apna Rupaiyya Mascot" class="mascot-avatar-small" width="36" height="36">
+        <div class="header-mascot-text">
+          <span class="mascot-name-tag">Apna Rupaiyya:</span>
+          <span id="headerMascotTip">Welcome! Let’s plan your loan smartly with reducing-balance accuracy.</span>
+        </div>
+      </div>
+      <div class="header-tools" aria-label="Display options">
+        <label for="languageSelect" class="visually-hidden">Language</label>
+        <select id="languageSelect" aria-label="Language">
+          <option value="en">English</option>
+          <option value="hi">हिन्दी</option>
+          <option value="mr">मराठी</option>
+        </select>
+        <button type="button" id="themeToggle" class="btn-secondary" aria-pressed="false">Dark theme</button>
+        <button type="button" id="demoToggle" class="btn-secondary" aria-pressed="false">Try demo</button>
+        <button type="button" id="goodbyeButton" class="btn-secondary">Goodbye / return to welcome</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main id="main-content" class="app-shell">
+    <aside class="sidebar" aria-label="Main navigation">
+      <p class="sidebar-heading">LoanWatch</p>
+      <nav class="section-nav" aria-label="Sections">
+        <button type="button" class="section-nav-item active" data-section="dashboardSection" aria-current="page">Main Dashboard</button>
+        <button type="button" class="section-nav-item" data-section="calculatorSection">EMI Calculator</button>
+        <button type="button" class="section-nav-item" data-section="trackerSection">Loan Tracker</button>
+        <button type="button" class="section-nav-item" data-section="howToSection">How to Use</button>
+      </nav>
+    </aside>
+    <div class="main-wrapper">
+    <div class="page-intro">
+      <h1 class="page-title" id="sectionTitle">Main Dashboard</h1>
+      <p class="page-subtitle" id="sectionSubtitle">A clear overview of your saved loans and estimated repayment.</p>
+    </div>
+
+    <section id="welcomePanel" class="welcome-panel" aria-labelledby="welcomeHeading">
+      <img src="assets/icons/rupee-mascot.svg" alt="" width="54" height="54">
+      <div>
+        <h2 id="welcomeHeading" tabindex="-1">Welcome to LoanWatch</h2>
+        <p>Plan your loan, understand each instalment, and keep a private record in this browser. Figures are estimates, not lender-confirmed quotes.</p>
+      </div>
+      <button type="button" id="continueButton" class="btn-primary">Continue</button>
+    </section>
+
+    <section id="dashboardSection" class="app-section dashboard-section" aria-labelledby="dashboardHeading">
+      <div class="section-heading">
+        <div>
+          <h2 id="dashboardHeading">Your loan dashboard</h2>
+          <p id="dataNotice">Your records stay in this browser. Clearing browser site data may erase them.</p>
+        </div>
+        <span id="demoStatus" class="demo-status" hidden>Demo data — changes are temporary</span>
+      </div>
+      <div class="dashboard-grid" aria-live="polite">
+        <article class="dashboard-metric"><span id="activeLoansLabel">Active loans</span><strong id="dashboardLoanCount">0</strong></article>
+        <article class="dashboard-metric"><span>Combined monthly EMI</span><strong id="dashboardEMI">₹0.00</strong></article>
+        <article class="dashboard-metric"><span>Total original principal</span><strong id="dashboardPrincipal">₹0.00</strong></article>
+        <article class="dashboard-metric"><span>Outstanding principal</span><strong id="dashboardOutstanding">₹0.00</strong></article>
+        <article class="dashboard-metric"><span>Estimated total interest</span><strong id="dashboardInterest">₹0.00</strong></article>
+        <article class="dashboard-metric"><span>Repayment progress</span><strong id="dashboardProgress">0%</strong><progress id="dashboardProgressBar" max="100" value="0">0%</progress></article>
+      </div>
+      <p id="upcomingPayment" class="upcoming-payment">No upcoming instalments. Add a loan to begin.</p>
+      <aside id="highInterestAlert" class="high-interest-alert" role="status" hidden></aside>
+      <p id="storageWarning" class="storage-warning" role="status" hidden></p>
+      <div class="dashboard-charts" aria-label="Loan visualizations">
+        <article class="card dashboard-chart-card">
+          <h3 id="compositionChartTitle">Estimated repayment composition</h3>
+          <div class="composition-chart"><svg id="compositionChart" viewBox="0 0 180 180" role="img" aria-labelledby="compositionChartTitle compositionChartDescription"></svg><p id="compositionChartDescription" class="visually-hidden"></p></div>
+          <div id="compositionLegend" class="chart-legend"></div>
+        </article>
+        <article class="card dashboard-chart-card">
+          <h3 id="outstandingChartTitle">Outstanding principal by loan</h3>
+          <div id="outstandingChart" class="outstanding-chart" role="img" aria-labelledby="outstandingChartTitle"></div>
+        </article>
+      </div>
+      <section class="card dashboard-summary-card" aria-labelledby="dashboardSummaryHeading">
+        <h3 id="dashboardSummaryHeading">Loan overview</h3>
+        <div id="dashboardLoanSummary"></div>
+      </section>
+    </section>
+
+    <section id="trackerSection" class="app-section" aria-label="Loan Tracker" hidden>
+    <section id="loanTracker" class="tracker-section" aria-labelledby="trackerHeading">
+      <div class="section-heading">
+        <div>
+          <h2 id="trackerHeading">My loans</h2>
+          <p>Add loans and record instalments you have paid. LoanWatch does not process payments.</p>
+        </div>
+      </div>
+      <form id="loanForm" class="loan-form card" novalidate>
+        <h3 id="loanFormHeading">Save a loan</h3>
+        <div class="loan-form-grid">
+          <label class="form-group">Loan name
+            <input id="loanName" class="text-input" maxlength="80" required placeholder="e.g. Family home loan">
+          </label>
+          <label class="form-group">Category
+            <select id="loanCategory" class="text-input" required>
+              <option value="Home Loan">Home Loan</option>
+              <option value="Car Loan">Car Loan</option>
+              <option value="Education Loan">Education Loan</option>
+              <option value="Other Loans">Other Loans</option>
+            </select>
+          </label>
+          <label class="form-group">Start date
+            <input id="loanStartDate" type="date" class="text-input" required>
+          </label>
+        </div>
+        <p class="form-helper-text">Loan amount, rate, and tenure come from the calculator above. Check them before saving.</p>
+        <div class="loan-form-actions">
+          <button type="submit" id="saveLoanButton" class="btn-primary">Save calculator details</button>
+          <button type="button" id="cancelLoanEdit" class="btn-secondary" hidden>Cancel edit</button>
+          <span id="loanFormMessage" role="status" aria-live="polite"></span>
+        </div>
+      </form>
+      <div id="loanList" class="loan-list" aria-live="polite"></div>
+    </section>
+    </section>
+
+    <section id="calculatorSection" class="app-section" aria-label="EMI Calculator" hidden>
+    <!-- 2-Column Responsive Calculator Grid -->
+    <div class="calculator-grid">
+      <!-- Left Column: Input Form Controls -->
+      <section class="card" aria-labelledby="input-heading">
+        <div class="card-header">
+          <div class="card-header-main">
+            <h2 id="input-heading" class="card-title">Loan Parameters</h2>
+            <p id="inputSubtitle" class="card-subtitle">Adjust principal, interest rate, and tenure</p>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <form id="emiForm" onsubmit="return false;" novalidate>
+            <!-- 1. Principal Input Group -->
+            <div class="form-group">
+              <div class="form-label-row">
+                <label for="principalInput" class="form-label">
+                  Loan Amount (Principal)
+                </label>
+                <span id="principalWords" class="amount-in-words" aria-live="polite">Twenty-Five Lakh Rupees</span>
+              </div>
+              <div class="input-affix-wrapper">
+                <span class="input-affix input-prefix" aria-hidden="true">₹</span>
+                <input
+                  type="text"
+                  id="principalInput"
+                  name="principal"
+                  class="text-input has-prefix"
+                  inputmode="numeric"
+                  aria-describedby="principalError principalWords"
+                  aria-required="true"
+                  value="25,00,000"
+                >
+              </div>
+              <div id="principalError" class="field-error-msg" role="alert" aria-live="assertive"></div>
+
+              <!-- Slider for Principal -->
+              <div class="slider-container">
+                <input
+                  type="range"
+                  id="principalSlider"
+                  class="range-slider"
+                  min="10000"
+                  max="10000000"
+                  step="25000"
+                  value="2500000"
+                  aria-label="Loan Amount Slider"
+                >
+                <div class="slider-scale-limits">
+                  <span>₹ 10 K</span>
+                  <span>₹ 50 Lakh</span>
+                  <span>₹ 1 Crore</span>
+                </div>
+              </div>
+
+              <!-- Principal Preset Chips -->
+              <div id="principalChips" class="preset-chips-row" role="group" aria-label="Quick Loan Amount Presets"></div>
+            </div>
+
+            <!-- 2. Annual Interest Rate Group -->
+            <div class="form-group">
+              <div class="form-label-row">
+                <label for="rateInput" class="form-label">
+                  Annual Interest Rate (APR)
+                </label>
+                <span class="form-helper-text">Reducing Monthly Balance</span>
+              </div>
+              <div class="input-affix-wrapper">
+                <input
+                  type="number"
+                  id="rateInput"
+                  name="annualRate"
+                  class="text-input has-suffix"
+                  step="0.05"
+                  min="0"
+                  max="30"
+                  aria-describedby="rateError"
+                  aria-required="true"
+                  value="8.5"
+                >
+                <span class="input-affix input-suffix" aria-hidden="true">%</span>
+              </div>
+              <div id="rateError" class="field-error-msg" role="alert" aria-live="assertive"></div>
+
+              <!-- Slider for Interest Rate -->
+              <div class="slider-container">
+                <input
+                  type="range"
+                  id="rateSlider"
+                  class="range-slider"
+                  min="0"
+                  max="20"
+                  step="0.1"
+                  value="8.5"
+                  aria-label="Annual Interest Rate Slider"
+                >
+                <div class="slider-scale-limits">
+                  <span>0% (Free)</span>
+                  <span>10%</span>
+                  <span>20%</span>
+                </div>
+              </div>
+
+              <!-- Rate Preset Chips -->
+              <div id="rateChips" class="preset-chips-row" role="group" aria-label="Quick Interest Rate Presets"></div>
+            </div>
+
+            <!-- 3. Loan Tenure Group -->
+            <div class="form-group">
+              <div class="form-label-row">
+                <label for="tenureInput" class="form-label" id="tenureUnitLabel">
+                  Tenure (Years)
+                </label>
+                <!-- Unit Switch: Years vs Months -->
+                <div class="toggle-group" role="group" aria-label="Tenure Unit Toggle">
+                  <button type="button" id="tenureUnitYears" class="toggle-option-btn active" aria-pressed="true">Years</button>
+                  <button type="button" id="tenureUnitMonths" class="toggle-option-btn" aria-pressed="false">Months</button>
+                </div>
+              </div>
+              <div class="input-affix-wrapper">
+                <input
+                  type="number"
+                  id="tenureInput"
+                  name="tenure"
+                  class="text-input"
+                  step="0.5"
+                  min="0.5"
+                  max="35"
+                  aria-describedby="tenureError"
+                  aria-required="true"
+                  value="20"
+                >
+              </div>
+              <div id="tenureError" class="field-error-msg" role="alert" aria-live="assertive"></div>
+
+              <!-- Slider for Tenure -->
+              <div class="slider-container">
+                <input
+                  type="range"
+                  id="tenureSlider"
+                  class="range-slider"
+                  min="0.5"
+                  max="35"
+                  step="0.5"
+                  value="20"
+                  aria-label="Loan Tenure Slider"
+                >
+                <div class="slider-scale-limits">
+                  <span>6 Mo</span>
+                  <span>15 Yrs</span>
+                  <span id="tenureScaleMax">35 Yrs</span>
+                </div>
+              </div>
+
+              <!-- Tenure Preset Chips -->
+              <div id="tenureChips" class="preset-chips-row" role="group" aria-label="Quick Tenure Presets"></div>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- Right Column: Results, Breakdown & Apna Rupaiyya Mascot -->
+      <section class="card results-card" id="resultsCard" aria-labelledby="results-heading">
+        <div class="card-header">
+          <div class="card-header-main">
+            <h2 id="results-heading" class="card-title">Repayment Summary</h2>
+            <p id="resultsSubtitle" class="card-subtitle">Monthly obligation &amp; total cost breakdown</p>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <!-- Status Banner for Invalid Inputs -->
+          <div id="resultsStatusNotice" class="results-status-banner" role="status" aria-live="polite">
+            <svg class="results-status-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 6a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+            </svg>
+            <span id="resultsStatusText">Correct the highlighted inputs to calculate your EMI.</span>
+          </div>
+
+          <!-- Featured EMI Callout -->
+          <div class="emi-featured-box">
+            <div class="emi-label">Estimated Monthly EMI</div>
+            <div id="monthlyEMI" class="emi-amount" aria-live="polite">₹21,695.58</div>
+            <div class="emi-note" id="emiNote">Payable every month until full loan payoff</div>
+          </div>
+
+          <!-- Key Metrics Grid -->
+          <div class="metrics-summary-grid">
+            <div class="metric-card-mini">
+              <span class="metric-mini-title">
+                <span class="metric-indicator-dot principal"></span> Principal Amount
+              </span>
+              <span id="principalAmount" class="metric-mini-val">₹25,00,000.00</span>
+              <span id="principalCompact" class="metric-mini-sub">₹ 25.00 Lakh</span>
+            </div>
+
+            <div class="metric-card-mini">
+              <span class="metric-mini-title">
+                <span class="metric-indicator-dot interest"></span> Total Interest
+              </span>
+              <span id="interestAmount" class="metric-mini-val">₹27,06,939.76</span>
+              <span id="interestCompact" class="metric-mini-sub">₹ 27.07 Lakh</span>
+            </div>
+          </div>
+
+          <!-- Total Payment Metric -->
+          <div class="metric-card-mini total-payment-card" style="margin-bottom: var(--space-6);">
+            <span class="metric-mini-title">Total Repayment Amount (Principal + Interest)</span>
+            <span id="totalPayment" class="metric-mini-val" style="font-size: var(--font-size-xl); color: var(--text-primary);">₹52,06,939.76</span>
+          </div>
+
+          <!-- Visual Ratio Breakdown Bar -->
+          <div class="breakdown-container">
+            <div class="breakdown-header">
+              <span>Principal vs. Interest Ratio</span>
+            </div>
+            <div
+              class="breakdown-bar-track"
+              role="progressbar"
+              aria-label="Repayment Split Bar"
+              aria-valuemin="0"
+              aria-valuemax="100"
+            >
+              <div id="principalBar" class="breakdown-bar-segment principal-segment" style="width: 48%;" aria-valuenow="48"></div>
+              <div id="interestBar" class="breakdown-bar-segment interest-segment" style="width: 52%;" aria-valuenow="52"></div>
+            </div>
+            <div class="breakdown-legend">
+              <div class="legend-item">
+                <span class="metric-indicator-dot principal"></span>
+                <span>Principal: <strong id="principalPercent" class="legend-badge principal-badge">48%</strong></span>
+              </div>
+              <div class="legend-item">
+                <span class="metric-indicator-dot interest"></span>
+                <span>Interest: <strong id="interestPercent" class="legend-badge interest-badge">52%</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Apna Rupaiyya Mascot Card -->
+          <div class="mascot-advice-card" role="complementary" aria-label="Apna Rupaiyya Advice">
+            <img src="assets/icons/rupee-mascot.svg" alt="Apna Rupaiyya Mascot" class="mascot-avatar-large" width="58" height="58">
+            <div class="mascot-speech-bubble">
+              <div class="mascot-title-row">
+                <span id="mascotSpeakerTitle" class="mascot-speaker-name">Apna Rupaiyya</span>
+                <span class="mascot-badge">Financial Buddy</span>
+              </div>
+              <p id="mascotSpeechText" class="mascot-speech-text">
+                Notice how long tenures keep monthly EMI low, but drive up compounding interest. Prepayments later can save you lakhs!
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Full-Width Amortization Schedule Section -->
+    <section class="amortization-section">
+      <div class="schedule-card" aria-labelledby="schedule-heading">
+        <div class="schedule-header">
+          <div>
+            <h2 id="schedule-heading" class="card-title">Amortisation Schedule</h2>
+            <p id="scheduleSubtitle" class="card-subtitle">Month-by-month reducing balance breakdown of principal and interest</p>
+          </div>
+          <div class="schedule-controls">
+            <div class="toggle-group" role="group" aria-label="Schedule View Toggle">
+              <button type="button" id="viewYearlyBtn" class="toggle-option-btn active" aria-pressed="true">Yearly Summary</button>
+              <button type="button" id="viewMonthlyBtn" class="toggle-option-btn" aria-pressed="false">Month-by-Month</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="table-responsive-wrapper" tabindex="0" aria-label="Amortization Schedule Table">
+          <table class="data-table">
+            <thead id="scheduleTableHead">
+              <!-- Populated by schedule.js -->
+            </thead>
+            <tbody id="scheduleTableBody">
+              <!-- Populated by schedule.js -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="schedule-footer">
+          <span id="scheduleFooterInfo">Showing annual summary for 20 years.</span>
+          <button type="button" id="expandTableBtn" class="btn-secondary" style="display: none;">Show All Months</button>
+        </div>
+      </div>
+    </section>
+    </section>
+
+    <section id="howToSection" class="app-section" aria-label="How to Use" hidden>
+    <section id="learningSection" class="learning-section" aria-labelledby="learningHeading">
+      <div class="section-heading">
+        <div>
+          <h2 id="learningHeading">Learn about your loan</h2>
+          <p>A beginner-friendly guide from Apna Rupaiyya.</p>
+        </div>
+      </div>
+      <div class="learning-grid">
+        <article class="card">
+          <h3>How to use LoanWatch</h3>
+          <ol class="learning-steps">
+            <li>Enter the principal, annual interest rate, and tenure in the calculator.</li>
+            <li>Review the estimated EMI, total repayment, interest, and schedule.</li>
+            <li>Add a name, category, and start date, then save these calculator details as a loan.</li>
+            <li>In your loan card, mark an instalment paid only after you have paid your lender. Review the payment history and remaining instalments.</li>
+            <li>Download a report for an individual loan when you need a local summary.</li>
+          </ol>
+          <p class="estimate-note">All calculations are estimates using a reducing-balance model. Your lender’s schedule, fees, and actual payment dates may differ.</p>
+        </article>
+        <article class="card">
+          <h3>Financial glossary</h3>
+          <dl class="glossary-list">
+            <dt>Principal</dt><dd>The amount borrowed, before interest.</dd>
+            <dt>EMI</dt><dd>A regular monthly payment toward interest and principal.</dd>
+            <dt>Interest rate</dt><dd>The yearly percentage used to estimate the cost of borrowing.</dd>
+            <dt>Tenure</dt><dd>The planned length of the loan, usually measured in months.</dd>
+            <dt>Total repayment</dt><dd>All estimated instalments added together.</dd>
+            <dt>Total interest</dt><dd>The estimated borrowing cost, in addition to principal.</dd>
+            <dt>Outstanding balance</dt><dd>Estimated principal not yet repaid according to the tracked schedule.</dd>
+            <dt>Reducing-balance interest</dt><dd>Interest is estimated on the principal still outstanding each month.</dd>
+            <dt>Amortisation schedule</dt><dd>A month-by-month estimate of each payment’s interest and principal parts.</dd>
+          </dl>
+        </article>
+      </div>
+    </section>
+    </section>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <div class="footer-compliance">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span><strong>LoanWatch</strong> • Built with Vanilla HTML5, CSS3 &amp; ES Modules</span>
+      </div>
+      <div>
+        <span>Client-side only • No bank integration or payment processing • Clearing browser site data may erase saved records</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Application Entry Point -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

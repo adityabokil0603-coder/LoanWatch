@@ -1,0 +1,133 @@
+/**
+ * LoanWatch Design Tokens
+ * Modern Indian Fintech Aesthetic
+ * Warm Ivory, Deep Navy, Restrained Saffron & Emerald Green
+ */
+
+:root {
+  /* Surface & Canvas Colors (Warm Ivory Palette) */
+  --bg-canvas: #FAF7F2;
+  --bg-surface: #FFFFFF;
+  --bg-surface-elevated: #FFFDF9;
+  --bg-surface-tint: #F4EFE6;
+  --bg-surface-subtle: #EDE7DC;
+
+  /* Text & Contrast (Deep Navy Palette) */
+  --text-primary: #0C1A30;
+  --text-secondary: #334862;
+  --text-muted: #5C708A;
+  --text-inverse: #FFFFFF;
+
+  /* Brand Accents - Restrained Saffron (Sacred fire & energy, interest indicator) */
+  --brand-saffron: #D95D1E;
+  --brand-saffron-hover: #BF4C13;
+  --brand-saffron-light: #FFF2EB;
+  --brand-saffron-border: #F7C6B0;
+
+  /* Brand Accents - Emerald Green (Prosperity & stability, principal indicator) */
+  --brand-emerald: #0F764E;
+  --brand-emerald-hover: #0A5739;
+  --brand-emerald-light: #E7F7F0;
+  --brand-emerald-border: #B2E5D0;
+
+  /* Brand Accents - Royal Gold (Coin & Mascot highlight) */
+  --brand-gold: #DDA027;
+  --brand-gold-light: #FFF8E7;
+
+  /* Neutral Borders */
+  --border-subtle: #E8E2D5;
+  --border-default: #D8D0C0;
+  --border-focus: #0C1A30;
+
+  /* Feedback Colors */
+  --color-danger: #C92A2A;
+  --color-danger-bg: #FFF5F5;
+  --color-danger-border: #FFC9C9;
+  --color-warning: #B36800;
+  --color-warning-bg: #FFF9DB;
+  --color-warning-text: #674000;
+
+  /* Typography */
+  --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Devanagari", "Nirmala UI", Mangal, Roboto, "Noto Sans", Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  --font-family-display: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Devanagari", "Nirmala UI", Mangal, Roboto, "Noto Sans", sans-serif;
+  --font-family-mono: "SF Mono", "Segoe UI Mono", "Roboto Mono", Consolas, Menlo, monospace;
+
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.84375rem; /* 13.5px */
+  --font-size-base: 0.9375rem;/* 15px */
+  --font-size-md: 1.0625rem;  /* 17px */
+  --font-size-lg: 1.25rem;    /* 20px */
+  --font-size-xl: 1.5rem;     /* 24px */
+  --font-size-2xl: 1.875rem;  /* 30px */
+  --font-size-3xl: 2.375rem;  /* 38px */
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-black: 800;
+
+  --line-height-tight: 1.25;
+  --line-height-base: 1.5;
+  --line-height-relaxed: 1.65;
+
+  /* Elevation Shadows */
+  --shadow-sm: 0 1px 3px rgba(12, 26, 48, 0.05), 0 1px 2px rgba(12, 26, 48, 0.04);
+  --shadow-md: 0 4px 14px rgba(12, 26, 48, 0.08), 0 1px 3px rgba(12, 26, 48, 0.04);
+  --shadow-lg: 0 10px 28px rgba(12, 26, 48, 0.11), 0 3px 8px rgba(12, 26, 48, 0.05);
+
+  /* Border Radii */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+  --radius-full: 9999px;
+
+  /* Spacing */
+  --space-1: 0.25rem;  /* 4px */
+  --space-2: 0.5rem;   /* 8px */
+  --space-3: 0.75rem;  /* 12px */
+  --space-4: 1rem;     /* 16px */
+  --space-5: 1.25rem;  /* 20px */
+  --space-6: 1.5rem;   /* 24px */
+  --space-8: 2rem;     /* 32px */
+  --space-10: 2.5rem;  /* 40px */
+  --space-12: 3rem;    /* 48px */
+
+  /* Layout Breakpoints */
+  --max-content-width: 1200px;
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 240ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg-canvas: #101923;
+  --bg-surface: #172332;
+  --bg-surface-elevated: #1d2b3c;
+  --bg-surface-tint: #223247;
+  --bg-surface-subtle: #2a3a4e;
+  --text-primary: #f3f6fa;
+  --text-secondary: #d2dce8;
+  --text-muted: #aab8c9;
+  --text-inverse: #101923;
+  --brand-saffron: #f28a51;
+  --brand-saffron-light: #492e25;
+  --brand-saffron-border: #784b38;
+  --brand-emerald: #55c99a;
+  --brand-emerald-light: #1d3b32;
+  --brand-emerald-border: #34604f;
+  --brand-gold: #f0bf59;
+  --brand-gold-light: #3b3425;
+  --border-subtle: #304155;
+  --border-default: #455970;
+  --border-focus: #f3f6fa;
+  --color-danger-bg: #482b31;
+  --color-danger-border: #79414a;
+  --color-warning: #f0bf59;
+  --color-warning-bg: #393223;
+  --color-warning-text: #f5d88d;
+}

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LoanWatch PDF report tests</title>
+</head>
+<body>
+  <pre id="test-results">Running PDF report tests...</pre>
+  <script type="module">
+    import { createLoan, getLoanProgress } from './js/loans.js';
+    import { createLoanReportPDF } from './js/pdf-report.js';
+
+    const output = document.getElementById('test-results');
+    try {
+      const loan = createLoan({
+        name: 'Family Home Loan',
+        category: 'Home Loan',
+        startDate: '2025-01-15',
+        principal: 2500000,
+        annualRate: 8.5,
+        tenureMonths: 240
+      }, 'pdf-test-loan');
+      const progress = getLoanProgress(loan);
+      const pdf = createLoanReportPDF(loan, progress);
+      const bytes = new Uint8Array(await pdf.arrayBuffer());
+      const text = String.fromCharCode(...bytes.slice(0, 8));
+      const source = new TextDecoder('latin1').decode(bytes);
+      const xrefMatch = source.match(/startxref\n(\d+)\n%%EOF/);
+      const xrefOffsetValid = Boolean(xrefMatch && source.slice(Number(xrefMatch[1])).startsWith('xref'));
+      const pageCount = Number(source.match(/\/Count (\d+)/)?.[1] || 0);
+      const checks = [
+        ['PDF Blob uses the application/pdf MIME type', pdf.type === 'application/pdf'],
+        ['Downloaded bytes start with the genuine PDF signature', text.startsWith('%PDF-1.4')],
+        ['PDF has exactly one page', pageCount === 1],
+        ['PDF contains a rendered report image for currency/font fidelity', source.includes('/Subtype /Image') && source.includes('/DCTDecode')],
+        ['PDF cross-reference table points to a valid offset', xrefOffsetValid],
+        ['PDF page uses the expected letter-size print canvas', source.includes('/MediaBox [0 0 612 792]')],
+        ['PDF does not embed monthly schedule rows as text', !/Month \d+/.test(source)]
+      ];
+      const failures = checks.filter(([, passed]) => !passed);
+      output.textContent = `${failures.length ? 'PDF REPORT TESTS FAILED' : 'ALL PDF REPORT TESTS PASSED'}\n${checks.map(([label, passed]) => `${passed ? 'PASS' : 'FAIL'}: ${label}`).join('\n')}\nFile bytes: ${bytes.length}\nEMI source figure: ${loan.monthlyEMI.toFixed(2)}\n`;
+      document.documentElement.dataset.testResult = failures.length ? 'fail' : 'pass';
+    } catch (error) {
+      output.textContent = `PDF REPORT TESTS FAILED\n${error.stack || error.message}`;
+      document.documentElement.dataset.testResult = 'fail';
+    }
+  </script>
+</body>
+</html>

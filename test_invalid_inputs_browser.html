@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+  <meta charset="UTF-8">
+  <title>LoanWatch Invalid Inputs Verification Suite</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+  <!-- Include identical HTML structure as index.html -->
+  <header class="app-header">
+    <div class="header-container">
+      <span class="brand-title">LoanWatch</span>
+      <div id="headerMascotTip">Welcome!</div>
+    </div>
+  </header>
+
+  <main class="main-wrapper">
+    <div class="calculator-grid">
+      <section class="card">
+        <form id="emiForm">
+          <!-- Principal -->
+          <div class="form-group">
+            <span id="principalWords" class="amount-in-words"></span>
+            <input type="text" id="principalInput" class="text-input" value="25,00,000">
+            <div id="principalError" class="field-error-msg" role="alert"></div>
+            <input type="range" id="principalSlider" class="range-slider" min="10000" max="10000000" value="2500000">
+            <div id="principalChips"></div>
+          </div>
+
+          <!-- Rate -->
+          <div class="form-group">
+            <input type="number" id="rateInput" class="text-input" value="8.5">
+            <div id="rateError" class="field-error-msg" role="alert"></div>
+            <input type="range" id="rateSlider" class="range-slider" min="0" max="20" value="8.5">
+            <div id="rateChips"></div>
+          </div>
+
+          <!-- Tenure -->
+          <div class="form-group">
+            <div class="toggle-group">
+              <button type="button" id="tenureUnitYears" class="toggle-option-btn active">Years</button>
+              <button type="button" id="tenureUnitMonths" class="toggle-option-btn">Months</button>
+            </div>
+            <span id="tenureUnitLabel">Tenure (Years)</span>
+            <input type="number" id="tenureInput" class="text-input" value="20">
+            <div id="tenureError" class="field-error-msg" role="alert"></div>
+            <input type="range" id="tenureSlider" class="range-slider" min="0.5" max="35" value="20">
+            <span id="tenureScaleMax">35 Yrs</span>
+            <div id="tenureChips"></div>
+          </div>
+        </form>
+      </section>
+
+      <!-- Results Card -->
+      <section class="card results-card" id="resultsCard">
+        <div class="card-body">
+          <div id="resultsStatusNotice" class="results-status-banner" role="status">
+            <span id="resultsStatusText">Correct the highlighted inputs to calculate your EMI.</span>
+          </div>
+          <div class="emi-featured-box">
+            <div id="monthlyEMI" class="emi-amount">₹21,695.58</div>
+            <div class="emi-note" id="emiNote">Payable every month</div>
+          </div>
+          <div class="metrics-summary-grid">
+            <span id="principalAmount"></span>
+            <span id="principalCompact"></span>
+            <span id="interestAmount"></span>
+            <span id="interestCompact"></span>
+            <span id="totalPayment"></span>
+          </div>
+          <div class="breakdown-container">
+            <div id="principalBar" class="breakdown-bar-segment"></div>
+            <div id="interestBar" class="breakdown-bar-segment"></div>
+            <span id="principalPercent"></span>
+            <span id="interestPercent"></span>
+          </div>
+          <div class="mascot-advice-card">
+            <span id="mascotSpeakerTitle"></span>
+            <span id="mascotSpeechText"></span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Schedule -->
+    <section class="amortization-section">
+      <div class="schedule-card">
+        <button type="button" id="viewYearlyBtn" class="toggle-option-btn active">Yearly</button>
+        <button type="button" id="viewMonthlyBtn" class="toggle-option-btn">Monthly</button>
+        <table class="data-table">
+          <thead id="scheduleTableHead"></thead>
+          <tbody id="scheduleTableBody"></tbody>
+        </table>
+        <span id="scheduleFooterInfo"></span>
+        <button type="button" id="expandTableBtn">Show All</button>
+      </div>
+    </section>
+
+    <!-- Test Output Container -->
+    <section id="testResultsSection" style="margin-top: 2rem; padding: 1rem; background: #FFF; border: 2px solid #0C1A30;">
+      <h2>Automated Browser Test Log</h2>
+      <ul id="testLogList"></ul>
+      <div id="testSummary">RUNNING TESTS...</div>
+    </section>
+  </main>
+
+  <script type="module">
+    import './js/app.js';
+
+    // Helper to log test assertion
+    const logList = document.getElementById('testLogList');
+    const summary = document.getElementById('testSummary');
+    let failures = 0;
+    let passes = 0;
+
+    function assert(name, condition, details = '') {
+      const li = document.createElement('li');
+      if (condition) {
+        passes++;
+        li.textContent = `[PASS] ${name}`;
+        li.style.color = '#0F764E';
+      } else {
+        failures++;
+        li.textContent = `[FAIL] ${name} ${details ? ': ' + details : ''}`;
+        li.style.color = '#C92A2A';
+        li.style.fontWeight = 'bold';
+      }
+      logList.appendChild(li);
+    }
+
+    // Run tests once app.js initializes
+    window.addEventListener('load', async () => {
+      // Small tick to ensure DOMContentLoaded listener in app.js ran
+      await new Promise(r => setTimeout(r, 80));
+
+      const pInput = document.getElementById('principalInput');
+      const pError = document.getElementById('principalError');
+      const rInput = document.getElementById('rateInput');
+      const rError = document.getElementById('rateError');
+      const tInput = document.getElementById('tenureInput');
+      const tError = document.getElementById('tenureError');
+      const resultsCard = document.getElementById('resultsCard');
+      const statusNotice = document.getElementById('resultsStatusNotice');
+      const statusText = document.getElementById('resultsStatusText');
+      const monthlyEMI = document.getElementById('monthlyEMI');
+      const tableBody = document.getElementById('scheduleTableBody');
+
+      // Test Case 1: Initial state is valid
+      assert('Initial Load: EMI is displayed to two decimal places', monthlyEMI.textContent.includes('21,695.58'), monthlyEMI.textContent);
+      assert('Initial Load: Status banner is hidden', !statusNotice.classList.contains('visible'));
+      assert('Initial Load: Table has rows', tableBody.children.length > 0);
+
+      // Test Case 2: Negative Principal (-50,000)
+      pInput.value = '-50,000';
+      pInput.dispatchEvent(new Event('input', { bubbles: true }));
+      assert('Negative Principal: Field has is-invalid', pInput.classList.contains('is-invalid'));
+      assert('Negative Principal: Field has aria-invalid="true"', pInput.getAttribute('aria-invalid') === 'true');
+      assert('Negative Principal: Inline error explains correction', pError.textContent.includes('greater than ₹ 0'), pError.textContent);
+      assert('Negative Principal: Status banner is visible', statusNotice.classList.contains('visible'));
+      assert('Negative Principal: Status text explains action', statusText.textContent.includes('Correct the highlighted inputs to calculate your EMI.'));
+      assert('Negative Principal: Stale EMI is removed', monthlyEMI.textContent === '—');
+      assert('Negative Principal: Schedule table shows empty prompt', tableBody.innerHTML.includes('table-empty-notice'));
+
+      // Test Case 3: Correct Principal back to 25,00,000
+      pInput.value = '25,00,000';
+      pInput.dispatchEvent(new Event('input', { bubbles: true }));
+      assert('Corrected Principal: is-invalid removed', !pInput.classList.contains('is-invalid'));
+      assert('Corrected Principal: aria-invalid removed', !pInput.hasAttribute('aria-invalid'));
+      assert('Corrected Principal: Status banner hidden', !statusNotice.classList.contains('visible'));
+      assert('Corrected Principal: Valid EMI restored', monthlyEMI.textContent.includes('21,695.58'));
+      assert('Corrected Principal: Schedule rows restored', tableBody.children.length === 20);
+
+      // Test Case 4: Zero Principal (0)
+      pInput.value = '0';
+      pInput.dispatchEvent(new Event('input', { bubbles: true }));
+      assert('Zero Principal: Field has is-invalid', pInput.classList.contains('is-invalid'));
+      assert('Zero Principal: Inline error explains correction', pError.textContent.includes('greater than ₹ 0'));
+      assert('Zero Principal: Stale EMI is removed', monthlyEMI.textContent === '—');
+      assert('Zero Principal: Status banner visible', statusNotice.classList.contains('visible'));
+
+      // Restore Principal
+      pInput.value = '25,00,000';
+      pInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+      // Test Case 5: Negative Interest Rate (-2.5)
+      rInput.value = '-2.5';
+      rInput.dispatchEvent(new Event('input', { bubbles: true }));
+      assert('Negative Rate: Field has is-invalid', rInput.classList.contains('is-invalid'));
+      assert('Negative Rate: Field has aria-invalid="true"', rInput.getAttribute('aria-invalid') === 'true');
+      assert('Negative Rate: Inline error explains correction', rError.textContent.includes('cannot be negative'), rError.textContent);
+      assert('Negative Rate: Status banner visible', statusNotice.classList.contains('visible'));
+      assert('Negative Rate: Stale EMI is removed', monthlyEMI.textContent === '—');
+      assert('Negative Rate: Schedule shows empty prompt', tableBody.innerHTML.includes('table-empty-notice'));
+
+      // Test Case 6: Correct Rate back to 8.5
+      rInput.value = '8.5';
+      rInput.dispatchEvent(new Event('input', { bubbles: true }));
+      assert('Corrected Rate: is-invalid removed', !rInput.classList.contains('is-invalid'));
+      assert('Corrected Rate: Valid EMI restored', monthlyEMI.textContent.includes('21,695.58'));
+      assert('Corrected Rate: Status banner hidden', !statusNotice.classList.contains('visible'));
+
+      // Test Case 7: Invalid/Zero Tenure (0)
+      tInput.value = '0';
+      tInput.dispatchEvent(new Event('input', { bubbles: true }));
+      assert('Zero Tenure: Field has is-invalid', tInput.classList.contains('is-invalid'));
+      assert('Zero Tenure: Field has aria-invalid="true"', tInput.getAttribute('aria-invalid') === 'true');
+      assert('Zero Tenure: Inline error explains correction', tError.textContent.includes('at least 1 month'), tError.textContent);
+      assert('Zero Tenure: Status banner visible', statusNotice.classList.contains('visible'));
+      assert('Zero Tenure: Stale EMI is removed', monthlyEMI.textContent === '—');
+      assert('Zero Tenure: Schedule shows empty prompt', tableBody.innerHTML.includes('table-empty-notice'));
+
+      // Test Case 8: Correct Tenure back to 20
+      tInput.value = '20';
+      tInput.dispatchEvent(new Event('input', { bubbles: true }));
+      assert('Corrected Tenure: is-invalid removed', !tInput.classList.contains('is-invalid'));
+      assert('Corrected Tenure: Valid EMI restored', monthlyEMI.textContent.includes('21,695.58'));
+      assert('Corrected Tenure: Schedule rows restored', tableBody.children.length === 20);
+
+      // Test Case 9: Zero Interest Loan (0%) - must be VALID!
+      rInput.value = '0';
+      rInput.dispatchEvent(new Event('input', { bubbles: true }));
+      assert('Zero Interest: Field is NOT marked invalid', !rInput.classList.contains('is-invalid'));
+      assert('Zero Interest: Status banner is NOT shown', !statusNotice.classList.contains('visible'));
+      assert('Zero Interest: Valid EMI computed to two decimal places (₹10,416.67 for 25L/20Y)', monthlyEMI.textContent.includes('10,416.67'), monthlyEMI.textContent);
+
+      // Restore Rate
+      rInput.value = '8.5';
+      rInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+      // Summary
+      if (failures === 0) {
+        summary.textContent = `ALL BROWSER TESTS PASSED: ${passes} passed, 0 failed.`;
+        summary.style.color = '#0F764E';
+        summary.style.fontWeight = 'bold';
+      } else {
+        summary.textContent = `BROWSER TESTS FAILED: ${passes} passed, ${failures} failed.`;
+        summary.style.color = '#C92A2A';
+        summary.style.fontWeight = 'bold';
+      }
+    });
+  </script>
+</body>
+</html>

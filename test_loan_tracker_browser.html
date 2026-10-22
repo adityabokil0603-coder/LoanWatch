@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LoanWatch tracker tests</title>
+</head>
+<body>
+  <pre id="test-results">Running tracker tests...</pre>
+  <script type="module">
+    import {
+      createLoan, getDashboardTotals, getDueDate, getLoanProgress,
+      loadLoans, LOAN_STORAGE_KEY, markInstallmentPaid, saveLoans
+    } from './js/loans.js';
+    import { calculateEMI } from './js/calculations.js';
+
+    class MemoryStorage {
+      values = new Map();
+      getItem(key) { return this.values.get(key) ?? null; }
+      setItem(key, value) { this.values.set(key, String(value)); }
+    }
+
+    const results = [];
+    function check(label, condition) {
+      if (!condition) throw new Error(`FAIL: ${label}`);
+      results.push(`PASS: ${label}`);
+    }
+
+    try {
+      const fixedLoan = createLoan({
+        name: 'Student loan', category: 'Education Loan', startDate: '2024-01-31',
+        principal: 120000, annualRate: 0, tenureMonths: 12
+      }, 'personal-1');
+      check('zero-interest EMI is split into equal paise amounts', calculateEMI(120000, 0, 12).monthlyEMI === 10000);
+      check('due dates clamp month-end dates without drifting', getDueDate('2024-01-31', 2) === '2024-02-29' && getDueDate('2024-01-31', 3) === '2024-03-31');
+
+      markInstallmentPaid(fixedLoan, 1, '2024-02-01');
+      const afterOnePayment = getLoanProgress(fixedLoan);
+      check('payment records once and reduces principal by only the scheduled principal part', fixedLoan.payments.length === 1 && afterOnePayment.outstandingPrincipal === 110000);
+      let duplicateRejected = false;
+      try { markInstallmentPaid(fixedLoan, 1, '2024-02-01'); } catch { duplicateRejected = true; }
+      check('duplicate instalments are rejected', duplicateRejected && fixedLoan.payments.length === 1);
+      let orderRejected = false;
+      try { markInstallmentPaid(fixedLoan, 3, '2024-04-01'); } catch { orderRejected = true; }
+      check('out-of-order instalments are rejected to protect balance accounting', orderRejected);
+      let invalidDateRejected = false;
+      try { markInstallmentPaid(fixedLoan, 2, '2024-02-31'); } catch { invalidDateRejected = true; }
+      check('invalid calendar payment dates are rejected', invalidDateRejected);
+      let futureDateRejected = false;
+      try { markInstallmentPaid(fixedLoan, 2, '9999-12-31'); } catch { futureDateRejected = true; }
+      check('future payment dates cannot deduct principal early', futureDateRejected);
+      let paymentOrderRejected = false;
+      try { markInstallmentPaid(fixedLoan, 2, '2024-01-31'); } catch { paymentOrderRejected = true; }
+      check('payment dates cannot move backward through the recorded history', paymentOrderRejected);
+      markInstallmentPaid(fixedLoan, 2, '2024-03-01');
+      check('two sequential payments leave the expected outstanding principal', getLoanProgress(fixedLoan).outstandingPrincipal === 100000);
+
+      const interestLoan = createLoan({
+        name: 'Rate test', category: 'Home Loan', startDate: '2024-01-01',
+        principal: 100000, annualRate: 12, tenureMonths: 12
+      }, 'rate-test');
+      markInstallmentPaid(interestLoan, 1, '2024-02-01');
+      const originalPaidPrincipal = interestLoan.payments[0].principalPaid;
+      const editedTerms = createLoan({
+        ...interestLoan, principal: 200000, annualRate: 10, tenureMonths: 18
+      }, interestLoan.id);
+      editedTerms.payments = interestLoan.payments;
+      const editedProgress = getLoanProgress(editedTerms);
+      const expectedOutstanding = 200000 - originalPaidPrincipal;
+      check('editing financial terms preserves paid principal and re-amortises only the remaining balance', editedProgress.outstandingPrincipal === expectedOutstanding && editedProgress.schedule.rows[1].openingBalance === expectedOutstanding && editedProgress.schedule.rows.length === 18 && editedProgress.schedule.rows.at(-1).closingBalance === 0);
+
+      const storage = new MemoryStorage();
+      saveLoans([fixedLoan], storage);
+      const personalBeforeDemo = storage.getItem(LOAN_STORAGE_KEY);
+      const loaded = loadLoans(storage);
+      check('valid personal loans survive a save/load round trip', !loaded.malformed && loaded.loans.length === 1 && loaded.loans[0].payments.length === 2);
+
+      const demoLoan = createLoan({
+        name: 'Temporary demo', category: 'Car Loan', startDate: '2025-05-01',
+        principal: 500000, annualRate: 8, tenureMonths: 60
+      }, 'demo-1');
+      markInstallmentPaid(demoLoan, 1, '2025-06-01');
+      const demoTotals = getDashboardTotals([demoLoan]);
+      check('demo loans produce calculated dashboard totals and payment progress', demoTotals.loanCount === 1 && demoTotals.monthlyEMI > 0 && demoTotals.outstandingPrincipal < demoLoan.principal);
+      check('entering and leaving a separate demo data set never changes personal storage', storage.getItem(LOAN_STORAGE_KEY) === personalBeforeDemo && loadLoans(storage).loans[0].id === 'personal-1');
+
+      storage.setItem(LOAN_STORAGE_KEY, '{bad json');
+      check('malformed storage is handled as empty data with an explicit malformed flag', loadLoans(storage).malformed && loadLoans(storage).loans.length === 0);
+      storage.setItem(LOAN_STORAGE_KEY, JSON.stringify([{
+        ...fixedLoan,
+        payments: [...fixedLoan.payments, fixedLoan.payments[0]]
+      }]));
+      check('duplicate persisted payment records are sanitized', loadLoans(storage).malformed && loadLoans(storage).loans[0].payments.length === 2);
+
+      document.getElementById('test-results').textContent = `ALL LOAN TRACKER TESTS PASSED\n${results.join('\n')}`;
+    } catch (error) {
+      document.getElementById('test-results').textContent = `LOAN TRACKER TESTS FAILED\n${results.join('\n')}\n${error.stack || error.message}`;
+    }
+  </script>
+</body>
+</html>
