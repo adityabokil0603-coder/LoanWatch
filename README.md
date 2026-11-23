@@ -2,7 +2,7 @@
 
 A responsive, frontend-only EMI Calculator and Loan Tracker designed with a modern Indian fintech visual identity and guided by **Apna Rupaiyya**, your friendly rupee-shaped financial literacy mascot.
 
-🚀 **Live Demo:** [Try the EMI & Loan Tracker here](https://netlify.app)
+🚀 **Live Demo:** [Try the EMI & Loan Tracker here](https://loanwatchemi.netlify.app/)
 
 A responsive, interactive EMI and loan repayment tracker built with HTML, CSS, and JavaScript.
 
